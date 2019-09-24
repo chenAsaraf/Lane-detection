@@ -1,0 +1,12 @@
+main: 
+
+https://towardsdatascience.com/tutorial-build-a-lane-detector-679fd8953132
+
+another useful source:
+
+hough transform documentations:
+https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_houghlines/py_houghlines.html
+
+determines actual lines article - https://www.ijera.com/papers/Vol6_issue1/Part%20-%201/H601016775.pdf
+hough implementation: https://alyssaq.github.io/2014/understanding-hough-transform/
+https://github.com/oskarboer/Hough-Transform-lines/blob/master/Hough_Transform_lines.py
