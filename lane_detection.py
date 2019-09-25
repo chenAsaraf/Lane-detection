@@ -56,6 +56,12 @@ def do_segment(frame):
     # Hough accumulator array of theta vs rho
     accumulator = np.zeros((2 * diag_len, num_thetas), dtype=np.uint64)
     y_idxs, x_idxs = np.nonzero(segment)  # (row, col) indexes to edges
+    # keep track of exactly which points contributed a vote to each Hough bin:
+    x_min_points = np.full(accumulator.shape, np.argmax(x_idxs))
+    y_min_points = np.zeros(accumulator.shape)
+    x_max_points = np.zeros(accumulator.shape)
+    y_max_points = np.full(accumulator.shape, np.argmax(y_idxs))
+    
     # Vote in the hough accumulator
     for i in range(len(x_idxs)):
         x = x_idxs[i]
@@ -66,7 +72,13 @@ def do_segment(frame):
             # rho = round(x * cos_t[t_idx] + y * sin_t[t_idx]) + diag_len
             rho = diag_len + int(round(x * cos_t[t_idx] + y * sin_t[t_idx]))
             accumulator[rho, t_idx] += 1
-
+            if y > y_min_points[rho, t_idx]:
+                y_min_points[rho, t_idx] = y
+                x_min_points[rho, t_idx] = x
+            elif y < y_max_points[rho, t_idx]:
+                y_max_points[rho, t_idx] = y
+                x_max_points[rho, t_idx] = x
+    
     value_threshold = 40
     
     max_votes = np.zeros((2 * diag_len, num_thetas), dtype=np.uint64)
@@ -78,7 +90,7 @@ def do_segment(frame):
                 max_votes[i,j] = accumulator[i,j]
                 # transform this max_votes + theta + rhos matrices to the output.
                 # output is: 2d array, number of rows = number of lines, each matrix-line contains 2 point of the line.
-                r = rhos[i]
+                """r = rhos[i]
                 theta = thetas[j]
                 a = np.cos(theta)
                 b = np.sin(theta)
@@ -88,13 +100,75 @@ def do_segment(frame):
                 y1 = int(y0 + 1000 * (a))
                 x2 = int(x0 - 1000 * (-b))
                 y2 = int(y0 - 1000 * (a))
-                # https://www.geeksforgeeks.org/line-detection-python-opencv-houghline-method/
+                # https://www.geeksforgeeks.org/line-detection-python-opencv-houghline-method/"""
+                x1 = x_min_points[i,j]
+                y1 = y_min_points[i,j]
+                x2 = x_max_points[i,j]
+                y2 = y_max_points[i,j]
                 points = np.array([x1, y1, x2, y2])
                 lines = np.vstack((lines, points))
                 
     # usualy implementation of hough transform return max_votes, thetas, rhos
     return lines
     
+    
+    
+    def calculate_lines(frame, lines):
+    # Empty arrays to store the coordinates of the left and right lines
+    left = []
+    right = []
+    # Loops through every detected line
+    x = 0
+    lines = lines[1:]
+    for line in lines:
+        # Reshapes line from 2D array to 1D array
+        x1, y1, x2, y2 = line.reshape(4)
+        # Fits a linear polynomial to the x and y coordinates and returns a vector of coefficients
+        # which describe the slope and y-intercept
+        parameters = np.polyfit((x1, x2), (y1, y2), 1)
+        slope = parameters[0]
+        y_intercept = parameters[1]
+        # If slope is negative, the line is to the left of the lane, and otherwise, the line is to the right of the lane
+        if slope < -0.5:
+            left.append((slope, y_intercept))
+        elif slope > 0.5:
+        #else:
+            right.append((slope, y_intercept))
+        # if x == 0: print("slope: ", slope, "b: ", y_intercept)
+        x+=1
+    # Averages out all the values for left and right into a single slope
+    # and y-intercept value for each line
+    left_avg = np.average(left, axis = 0)
+    right_avg = np.average(right, axis = 0)
+    # Calculates the x1, y1, x2, y2 coordinates for the left and right lines
+    left_line = calculate_coordinates(frame, left_avg)
+    right_line = calculate_coordinates(frame, right_avg)
+    # print("left: \n", left_line)
+    # print("right: \n", right_line)
+    return np.array([left_line, right_line])
+
+def calculate_coordinates(frame, parameters):
+    slope, intercept = parameters
+    # Sets initial y-coordinate as height from top down (bottom of the frame)
+    y1 = frame.shape[0]
+    # Sets final y-coordinate as 150 above the bottom of the frame
+    y2 = int(y1 - 150)
+    # Sets initial x-coordinate as (y1 - b) / m since y1 = mx1 + b
+    x1 = int((y1 - intercept) / slope)
+    # Sets final x-coordinate as (y2 - b) / m since y2 = mx2 + b
+    x2 = int((y2 - intercept) / slope)
+    return np.array([x1, y1, x2, y2])
+   
+   
+   def visualize_lines(frame, lines):
+    # Creates an image filled with zero intensities with the same dimensions as the frame
+    lines_visualize = np.zeros_like(frame)
+    # Checks if any lines are detected
+    if lines is not None:
+        for x1, y1, x2, y2 in lines:
+            # Draws lines between two coordinates with green color and 5 thickness
+            cv.line(lines_visualize, (x1, y1), (x2, y2), (0, 255, 0), 5)
+    return lines_visualize
     
 # ----------------- Testing the project with one shot ----------------- #
 
