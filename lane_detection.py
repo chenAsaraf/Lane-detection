@@ -26,9 +26,7 @@ def do_segment(frame):
     # Since height begins from 0 at the top, the y-coordinate of the bottom of the frame is its height
     height = frame.shape[0]
     # Creates a triangular polygon for the mask defined by three (x, y) coordinates
-    polygons = np.array([
-                            [(0, height), (800, height), (380, 290)]
-                        ])
+    polygons = np.array([[(0, height), (width-10, height),(340, 260),  (360,260)]])
     # Creates an image filled with zero intensities with the same dimensions as the frame
     mask = np.zeros_like(frame)
     # Allows the mask to be filled with values of 1 and the other areas to be filled with values of 0
@@ -36,7 +34,8 @@ def do_segment(frame):
     # A bitwise and operation between the mask and frame keeps only the triangular area of the frame
     segment = cv.bitwise_and(frame, mask)
     return segment
-    
+   
+   
   
   def hough_line(segment):
     # Rho and Theta ranges
@@ -79,7 +78,7 @@ def do_segment(frame):
                 y_max_points[rho, t_idx] = y
                 x_max_points[rho, t_idx] = x
     
-    value_threshold = 40
+    value_threshold = 35
     
     max_votes = np.zeros((2 * diag_len, num_thetas), dtype=np.uint64)
     # building al list of the output
@@ -90,35 +89,21 @@ def do_segment(frame):
                 max_votes[i,j] = accumulator[i,j]
                 # transform this max_votes + theta + rhos matrices to the output.
                 # output is: 2d array, number of rows = number of lines, each matrix-line contains 2 point of the line.
-                """r = rhos[i]
-                theta = thetas[j]
-                a = np.cos(theta)
-                b = np.sin(theta)
-                x0 = a * r
-                y0 = b * r
-                x1 = int(x0 + 1000 * (-b))
-                y1 = int(y0 + 1000 * (a))
-                x2 = int(x0 - 1000 * (-b))
-                y2 = int(y0 - 1000 * (a))
-                # https://www.geeksforgeeks.org/line-detection-python-opencv-houghline-method/"""
                 x1 = x_min_points[i,j]
                 y1 = y_min_points[i,j]
                 x2 = x_max_points[i,j]
                 y2 = y_max_points[i,j]
-                points = np.array([x1, y1, x2, y2])
+                points = np.array([x1, y1, x2, y2], dtype=int)
                 lines = np.vstack((lines, points))
                 
     # usualy implementation of hough transform return max_votes, thetas, rhos
     return lines
     
-    
-    
-    def calculate_lines(frame, lines):
+def calculate_lines(frame, lines):
     # Empty arrays to store the coordinates of the left and right lines
     left = []
     right = []
     # Loops through every detected line
-    x = 0
     lines = lines[1:]
     for line in lines:
         # Reshapes line from 2D array to 1D array
@@ -134,8 +119,6 @@ def do_segment(frame):
         elif slope > 0.5:
         #else:
             right.append((slope, y_intercept))
-        # if x == 0: print("slope: ", slope, "b: ", y_intercept)
-        x+=1
     # Averages out all the values for left and right into a single slope
     # and y-intercept value for each line
     left_avg = np.average(left, axis = 0)
@@ -143,8 +126,6 @@ def do_segment(frame):
     # Calculates the x1, y1, x2, y2 coordinates for the left and right lines
     left_line = calculate_coordinates(frame, left_avg)
     right_line = calculate_coordinates(frame, right_avg)
-    # print("left: \n", left_line)
-    # print("right: \n", right_line)
     return np.array([left_line, right_line])
 
 def calculate_coordinates(frame, parameters):
@@ -172,7 +153,7 @@ def calculate_coordinates(frame, parameters):
     
 # ----------------- Testing the project with one shot ----------------- #
 
-frame = cv.imread("shot1.jpg")
+"""frame = cv.imread("shot1.jpg")
 canny = do_canny(frame)
 print("canny done")
 cv.imshow("canny", canny)
@@ -190,12 +171,12 @@ cv.imshow("hough", lines_visualize)
 output = cv.addWeighted(frame, 0.9, lines_visualize, 1, 1)
 # Opens a new window and displays the output frame
 cv.imshow("output", output)
-cv.waitKey()
+cv.waitKey()"""
     
 # ----------------- Testing the project with video ----------------- #
 
 # The video feed is read in as a VideoCapture object
-"""cap = cv.VideoCapture("testVideo.mp4")
+cap = cv.VideoCapture("testVideo.mp4")
 while (cap.isOpened()):
     # ret = a boolean return value from getting the frame, frame = the current frame being projected in the video
     ret, frame = cap.read()
@@ -216,4 +197,4 @@ while (cap.isOpened()):
         break
 # The following frees up resources and closes all windows
 cap.release()
-cv.destroyAllWindows()"""
+cv.destroyAllWindows()
