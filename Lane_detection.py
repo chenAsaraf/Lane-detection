@@ -3,6 +3,38 @@ import math
 import cv2 as cv
 from cannyEdge import CannyEdgeDetect
 
+GRAY_SCALE = 1
+RGB = 2
+YIQ_MAT = np.array([
+    [0.299, 0.587, 0.114],
+    [0.596, -0.275, -0.321],
+    [0.121, -0.523, 0.311]
+])
+
+
+
+def transformRGB2YIQ(imgRGB: np.ndarray) -> np.ndarray:
+    """
+    Converts an RGB image to YIQ color space
+    :param imgRGB: An Image in RGB
+    :return: A YIQ in image color space
+    """
+    h, w, c = imgRGB.shape
+    imgRGB_reshape = imgRGB.reshape(-1, 3).T
+    yiq = YIQ_MAT.dot(imgRGB_reshape)
+    yiq = yiq.T.reshape((h, w, -1))
+    return yiq
+
+
+
+def do_canny(frame):
+    # Converts frame to grayscale because we only need the luminance channel for detecting edges - less computationally expensive
+    gray = cv.cvtColor(frame, cv.COLOR_RGB2GRAY)
+    # Applies a 5x5 gaussian blur with deviation of 0 to frame - not mandatory since Canny will do this for us
+    blur = cv.GaussianBlur(gray, (5, 5), 0)
+    # Applies Canny edge detector with minVal of 50 and maxVal of 150
+    canny = cv.Canny(blur, 50, 150)
+    return canny
 
 def do_segment(frame):
     # Since an image is a multi-directional array containing the relative intensities of each pixel
