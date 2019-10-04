@@ -180,7 +180,10 @@ cap = cv.VideoCapture("testVideo.mp4")
 while (cap.isOpened()):
     # ret = a boolean return value from getting the frame, frame = the current frame being projected in the video
     ret, frame = cap.read()
-    canny = do_canny(frame)
+    # OLD: canny = do_canny(frame)
+    grayFrame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    do_canny = CannyEdgeDetect()
+    canny = do_canny.find_edges(grayFrame)
     segment = do_segment(canny)
     lines = hough_lines(segment)
     # Averages multiple detected lines from hough into one line for left border of lane and one line for right border of lane
