@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import cv2 as cv
+from cannyEdge import CannyEdgeDetect
 
 """need to implement by ourselves:
  1. cv.cvtColor
