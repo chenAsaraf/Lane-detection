@@ -1,6 +1,8 @@
 import numpy as np
 import math
 import cv2 as cv
+from cannyEdge import CannyEdgeDetect
+
 
 def do_segment(frame):
     # Since an image is a multi-directional array containing the relative intensities of each pixel
