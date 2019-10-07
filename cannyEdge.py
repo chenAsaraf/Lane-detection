@@ -142,13 +142,3 @@ class CannyEdgeDetect:
         thinNormalMag = self.get_combined_thinned_image(mag, phi)
         weak = self.double_threshold(thinNormalMag)
         return weak * 255
-
-
-
-canny = CannyEdgeDetect()
-im4canny = cv2.imread("/home/oravital7/PycharmProjects/untitled/shot1.jpg", 0)
-uncanny = canny.find_edges(im4canny)
-uncanny = uncanny.astype('uint8')
-
-cv2.imshow('b', uncanny)
-cv2.waitKey(0)
