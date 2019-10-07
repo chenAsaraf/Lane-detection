@@ -44,10 +44,9 @@ def do_segment(frame):
     # Since height begins from 0 at the top, the y-coordinate of the bottom of the frame is its height
     height, width = frame.shape
 
-    # Creates a triangular polygon for the mask defined by three (x, y) coordinates
-    #polygons = np.array([ [(0, height), (900, height), (380, 290)] ])
+    # Creates a trapeze polygon for the mask defined by four (x, y) coordinates
     polygons = np.array([
-        [(0, height), (width-10, height),(340, 260),  (360,260)]
+        [(0, height-10), (width, height-10), (int(width / 2), int(height * 3 / 4))]
     ])
     # Creates an image filled with zero intensities with the same dimensions as the frame
     mask = np.zeros_like(frame)
