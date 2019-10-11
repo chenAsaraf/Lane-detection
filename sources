@@ -1,6 +1,8 @@
 main: 
 
 https://towardsdatascience.com/tutorial-build-a-lane-detector-679fd8953132
+https://towardsdatascience.com/finding-lane-lines-simple-pipeline-for-lane-detection-d02b62e7572b
+
 
 another useful source:
 
@@ -10,3 +12,6 @@ https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_imgproc/
 determines actual lines article - https://www.ijera.com/papers/Vol6_issue1/Part%20-%201/H601016775.pdf
 hough implementation: https://alyssaq.github.io/2014/understanding-hough-transform/
 https://github.com/oskarboer/Hough-Transform-lines/blob/master/Hough_Transform_lines.py
+
+Canny edge detector: 
+https://towardsdatascience.com/canny-edge-detection-step-by-step-in-python-computer-vision-b49c3a2d8123
