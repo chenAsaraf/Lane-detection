@@ -4,7 +4,7 @@ import cv2 as cv
 from cannyEdge import CannyEdgeDetect
 
 """
-Our algorithm we propose here to identify road lanes is divided into the following steps:
+Road lanes detection, algorithm steps:
     Input: Video from a dashboard camera
 1. Processing a video: sequence of images as video
 2. Converts the image to a grayscale image
