@@ -5,14 +5,35 @@ import math
 import numpy as np
 from dynamicThreshold import OtsuThresholdMethod
 
+def convolve(inImage: np.ndarray, kernel2: np.ndarray) -> np.ndarray:
+    """ Convolution method: convolve a 2-D array with a given kernel, mode='same' """
+    inv_k = kernel2[::, ::]
+    kernel_shape = np.array([x for x in kernel2.shape])
+    img_shape = np.array([x for x in inImage.shape])
+    out_len = np.max([kernel_shape, img_shape], axis=0)
+    midKernel = kernel_shape // 2
+    paddedSignal = np.pad(inImage.astype(np.float32),
+                          ((kernel_shape[0], kernel_shape[0]),
+                           (kernel_shape[1], kernel_shape[1]))
+                          , 'edge')
+    outSignal = np.ones(out_len)
+    for i in range(out_len[0]):
+        for j in range(out_len[1]):
+            st_x = j + midKernel[1] + 1
+            end_x = st_x + kernel_shape[1]
+            st_y = i + midKernel[0] + 1
+            end_y = st_y + kernel_shape[0]
+            outSignal[i, j] = (paddedSignal[st_y:end_y, st_x:end_x] * inv_k).sum()
+    return outSignal
+
 
 class CannyEdgeDetect:
 
     def _apply_filter(self, im, y, x):
         y = np.reshape(y, (3, 3))
         x = np.reshape(x, (3, 3))
-        Gy = scipy.signal.convolve(im, y)
-        Gx = scipy.signal.convolve(im, x)
+        Gy = convolve(im, y)
+        Gx = convolve(im, x)
         return Gy, Gx
 
     def scharr_filter(self, im):
@@ -109,7 +130,7 @@ class CannyEdgeDetect:
                     2, 4, 5, 4, 2,
                     4, 9, 12, 9, 4]
         gaussian = 1.0 / sum(gaussian) * np.reshape(gaussian, (5, 5))
-        return scipy.signal.convolve(im, gaussian, mode='same')
+        return convolve(im, gaussian)
 
     def normalize_magnitude(self, mag):
         """ scales magnitude matrix back to 0 - 255 values """
